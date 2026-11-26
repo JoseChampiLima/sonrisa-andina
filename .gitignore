@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Bloop y Metals
+/.bloop/
+/.metals/
+
+# Logs locales
+*.log
+
+# Variables de entorno locales
+.env
+.env.*
+!.env.example
