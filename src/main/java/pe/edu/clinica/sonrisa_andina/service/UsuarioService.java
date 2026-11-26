@@ -1,5 +1,8 @@
 package pe.edu.clinica.sonrisa_andina.service;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -70,13 +73,39 @@ public class UsuarioService implements UserDetailsService {
                 correo == null || correo.isBlank() ? null : correo.trim().toLowerCase());
         pacienteRepository.save(paciente);
 
-        String username = paciente.getCorreo() != null ? paciente.getCorreo() : dni;
+        guardarCuentaPaciente(paciente, paciente.getCorreo() != null ? paciente.getCorreo() : dni, password);
+        return paciente;
+    }
+
+    public Optional<String> usuarioVinculado(Long pacienteId) {
+        return usuarioRepository.findByPersonaId(pacienteId).map(Usuario::getUsername);
+    }
+
+    public String usuarioSugerido(Paciente paciente) {
+        String correo = paciente.getCorreo();
+        return correo != null && correo.length() <= 60 ? correo : paciente.getDni();
+    }
+
+    @Transactional
+    public void crearAccesoPaciente(Long pacienteId, String password) {
+        if (password.isBlank() || password.length() < 8
+                || password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ReglaNegocioException("La contraseña debe tener al menos 8 caracteres y como máximo 72 bytes.");
+        }
+        Paciente paciente = pacienteRepository.buscarParaActualizar(pacienteId)
+                .orElseThrow(() -> new ReglaNegocioException("El paciente no existe."));
+        if (usuarioRepository.existsByPersonaId(pacienteId)) {
+            throw new ReglaNegocioException("El paciente ya tiene una cuenta vinculada.");
+        }
+        guardarCuentaPaciente(paciente, usuarioSugerido(paciente), password);
+    }
+
+    private void guardarCuentaPaciente(Paciente paciente, String username, String password) {
         if (usuarioRepository.existsByUsername(username)) {
             throw new ReglaNegocioException("Ya existe una cuenta con el usuario " + username + ".");
         }
         Usuario usuario = new Usuario(username, passwordEncoder.encode(password), Rol.PACIENTE, paciente);
         usuarioRepository.save(usuario);
-        return paciente;
     }
 
     @Transactional

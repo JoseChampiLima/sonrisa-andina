@@ -16,6 +16,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByPersonaId(Long idPersona);
 
+    boolean existsByPersonaId(Long idPersona);
+
     List<Usuario> findAllByOrderByUsernameAsc();
 
     long countByRol(Rol rol);

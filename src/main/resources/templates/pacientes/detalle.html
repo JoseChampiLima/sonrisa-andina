@@ -112,15 +112,40 @@
                         </div>
                     </div>
 
+                    <div class="card mt-2" th:if="${usuarioActual != null and (usuarioActual.admin or usuarioActual.recepcion)}">
+                        <div class="card-header">
+                            <div class="card-title">Acceso al portal</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-pair">
+                                <span class="label">Usuario</span>
+                                <strong class="value" th:text="${usuarioPortal != null ? usuarioPortal : usuarioSugerido}"></strong>
+                            </div>
+                            <p class="small muted" th:if="${usuarioPortal != null}">Esta ficha ya tiene una cuenta vinculada.</p>
+                            <form th:if="${usuarioPortal == null}"
+                                  th:action="@{/pacientes/{id}/acceso-portal(id=${paciente.id})}" method="post">
+                                <div class="field">
+                                    <label for="portal-password">Contraseña inicial</label>
+                                    <input id="portal-password" name="password" type="password" autocomplete="new-password"
+                                           minlength="8" maxlength="72" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block mt-1">Crear acceso al portal</button>
+                            </form>
+                        </div>
+                    </div>
+
                     <div class="card mt-2">
                         <div class="card-body">
                             <form th:action="@{/pacientes/{id}/eliminar(id=${paciente.id})}" method="post"
                                   data-confirm="¿Desea eliminar el registro del paciente? Esta accion no se puede deshacer.">
-                                <button type="submit" class="btn btn-danger btn-block" th:disabled="${!#lists.isEmpty(citas)}">
+                                <button type="submit" class="btn btn-danger btn-block" th:disabled="${usuarioPortal != null or !#lists.isEmpty(citas)}">
                                     <svg class="icon"><use href="#i-x"/></svg> Eliminar paciente
                                 </button>
                             </form>
-                            <p class="small muted mt-1" th:if="${!#lists.isEmpty(citas)}">
+                            <p class="small muted mt-1" th:if="${usuarioPortal != null}">
+                                No es posible eliminar una ficha con una cuenta vinculada.
+                            </p>
+                            <p class="small muted mt-1" th:if="${usuarioPortal == null and !#lists.isEmpty(citas)}">
                                 No es posible eliminar pacientes con citas registradas: la informacion se
                                 conserva por trazabilidad clinica.
                             </p>

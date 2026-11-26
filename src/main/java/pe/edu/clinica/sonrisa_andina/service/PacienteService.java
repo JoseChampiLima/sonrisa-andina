@@ -10,6 +10,7 @@ import pe.edu.clinica.sonrisa_andina.domain.Paciente;
 import pe.edu.clinica.sonrisa_andina.exception.ReglaNegocioException;
 import pe.edu.clinica.sonrisa_andina.repository.CitaRepository;
 import pe.edu.clinica.sonrisa_andina.repository.PacienteRepository;
+import pe.edu.clinica.sonrisa_andina.repository.UsuarioRepository;
 import pe.edu.clinica.sonrisa_andina.web.form.PacienteForm;
 
 @Service
@@ -17,6 +18,7 @@ import pe.edu.clinica.sonrisa_andina.web.form.PacienteForm;
 public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
+    private final UsuarioRepository usuarioRepository;
     private final CitaRepository citaRepository;
 
     public List<Paciente> listar() {
@@ -72,7 +74,11 @@ public class PacienteService {
 
     @Transactional
     public void eliminar(Long id) {
-        Paciente paciente = obtener(id);
+        Paciente paciente = pacienteRepository.buscarParaActualizar(id)
+                .orElseThrow(() -> new ReglaNegocioException("El paciente no existe."));
+        if (usuarioRepository.existsByPersonaId(id)) {
+            throw new ReglaNegocioException("No se puede eliminar un paciente con una cuenta vinculada.");
+        }
         if (!citaRepository.findByPacienteIdOrderByInicioDesc(id).isEmpty()) {
             throw new ReglaNegocioException("No se puede eliminar un paciente con citas registradas. "
                     + "Considere conservar la informacion por trazabilidad.");

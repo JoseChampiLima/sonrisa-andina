@@ -1,5 +1,7 @@
 package pe.edu.clinica.sonrisa_andina.web;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +19,7 @@ import pe.edu.clinica.sonrisa_andina.domain.Paciente;
 import pe.edu.clinica.sonrisa_andina.exception.ReglaNegocioException;
 import pe.edu.clinica.sonrisa_andina.service.CitaService;
 import pe.edu.clinica.sonrisa_andina.service.PacienteService;
+import pe.edu.clinica.sonrisa_andina.service.UsuarioService;
 import pe.edu.clinica.sonrisa_andina.web.form.PacienteForm;
 
 @Controller
@@ -26,6 +29,7 @@ public class PacienteController {
 
     private final PacienteService pacienteService;
     private final CitaService citaService;
+    private final UsuarioService usuarioService;
 
     @GetMapping
     public String listar(@RequestParam(required = false) String q, Model model) {
@@ -65,11 +69,28 @@ public class PacienteController {
             Paciente paciente = pacienteService.obtener(id);
             model.addAttribute("paciente", paciente);
             model.addAttribute("citas", citaService.historialPaciente(id));
+            model.addAttribute("usuarioPortal", usuarioService.usuarioVinculado(id).orElse(null));
+            model.addAttribute("usuarioSugerido", usuarioService.usuarioSugerido(paciente));
             return "pacientes/detalle";
         } catch (ReglaNegocioException ex) {
             redirect.addFlashAttribute("error", ex.getMessage());
             return "redirect:/pacientes";
         }
+    }
+
+    @PostMapping("/{id}/acceso-portal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPCION')")
+    public String crearAccesoPortal(@PathVariable Long id, @RequestParam String password,
+                                    RedirectAttributes redirect) {
+        try {
+            usuarioService.crearAccesoPaciente(id, password);
+            redirect.addFlashAttribute("exito", "Acceso al portal creado.");
+        } catch (ReglaNegocioException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+        } catch (DataIntegrityViolationException ex) {
+            redirect.addFlashAttribute("error", "No se pudo crear el acceso. Verifique si el usuario ya existe.");
+        }
+        return "redirect:/pacientes/" + id;
     }
 
     @GetMapping("/{id}/editar")
