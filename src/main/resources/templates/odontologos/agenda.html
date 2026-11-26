@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Agenda del odontologo')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('odontologos')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Agenda del odontologo', 'Horario semanal y citas de hoy')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="section-head">
+                <div class="person">
+                    <div class="avatar" th:text="${#strings.substring(odontologo.nombres,0,1)}">C</div>
+                    <div>
+                        <h2 th:text="${odontologo.nombreCompleto}">Carlos Ramos</h2>
+                        <p class="muted small" th:text="${odontologo.especialidad.nombre} + ' · COP ' + ${odontologo.nroColegiatura}">
+                            Odontologia general
+                        </p>
+                    </div>
+                </div>
+                <div class="row-actions">
+                    <a class="btn btn-outline btn-sm" th:href="@{/odontologos}">Volver</a>
+                    <a class="btn btn-primary btn-sm" th:href="@{/citas/nueva}">
+                        <svg class="icon"><use href="#i-plus"/></svg> Reservar cita
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-calendar"/></svg> Citas de hoy
+                        </div>
+                        <span class="tag"><span th:text="${#lists.size(citas)}">0</span> citas</span>
+                    </div>
+                    <div class="timeline" th:if="${!#lists.isEmpty(citas)}">
+                        <div class="timeline-item" th:each="c : ${citas}">
+                            <div class="timeline-time" th:text="${@fmt.hora(c.inicio)}">09:00</div>
+                            <div class="timeline-body">
+                                <div class="timeline-title">
+                                    <a th:href="@{/citas/{id}(id=${c.id})}" th:text="${c.paciente.nombreCompleto}">
+                                        Maria Quispe
+                                    </a>
+                                </div>
+                                <div class="timeline-sub" th:text="${c.servicio.nombre}">Limpieza dental</div>
+                            </div>
+                            <span class="badge" th:classappend="${c.estado.css}" th:text="${c.estado.etiqueta}">
+                                Programada
+                            </span>
+                        </div>
+                    </div>
+                    <div class="empty" th:if="${#lists.isEmpty(citas)}">
+                        No hay citas agendadas para hoy.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-clock"/></svg> Horario semanal
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-pair" th:each="h : ${horarios}">
+                            <span class="label" th:text="${h.diaNombre}">Lunes</span>
+                            <span class="value"
+                                  th:text="${@fmt.hora(h.horaInicio)} + ' - ' + ${@fmt.hora(h.horaFin)}">
+                                09:00 - 20:00
+                            </span>
+                        </div>
+                        <div class="empty" th:if="${#lists.isEmpty(horarios)}">
+                            Sin horario registrado.
+                        </div>
+                        <div class="alert alert-info mt-2">
+                            <svg class="icon"><use href="#i-info"/></svg>
+                            <span>Solo se ofrecen horarios dentro de estos bloques y libres de cruces.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

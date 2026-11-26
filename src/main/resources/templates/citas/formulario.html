@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Reservar cita')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('nueva')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Reservar cita', 'Solo se muestran los horarios realmente disponibles')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-plus"/></svg> Nueva reserva
+                        </div>
+                        <a class="btn btn-ghost btn-sm" th:href="@{/citas}">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg> Volver a la agenda
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/citas}" method="post" th:object="${form}">
+                            <div class="form-grid">
+                                <div class="field full" th:classappend="${#fields.hasErrors('idPaciente')} ? 'field-error'">
+                                    <label for="idPaciente">Paciente</label>
+                                    <select th:field="*{idPaciente}">
+                                        <option value="">Seleccione un paciente...</option>
+                                        <option th:each="p : ${pacientes}" th:value="${p.id}"
+                                                th:text="${p.nombreCompleto} + ' - DNI ' + ${p.dni}">
+                                            Maria Quispe
+                                        </option>
+                                    </select>
+                                    <span class="error-text" th:if="${#fields.hasErrors('idPaciente')}"
+                                          th:errors="*{idPaciente}">Seleccione un paciente.</span>
+                                    <span class="hint">Si el paciente es nuevo, registrelo primero en el catalogo.</span>
+                                </div>
+
+                                <div class="field" th:classappend="${#fields.hasErrors('idOdontologo')} ? 'field-error'">
+                                    <label for="idOdontologo">Odontologo</label>
+                                    <select th:field="*{idOdontologo}">
+                                        <option value="">Seleccione...</option>
+                                        <option th:each="o : ${odontologos}" th:value="${o.id}"
+                                                th:text="${o.nombreCompleto} + ' (' + ${o.especialidad.nombre} + ')'">
+                                            Dr. Carlos Ramos
+                                        </option>
+                                    </select>
+                                    <span class="error-text" th:if="${#fields.hasErrors('idOdontologo')}"
+                                          th:errors="*{idOdontologo}">Seleccione un odontologo.</span>
+                                </div>
+
+                                <div class="field" th:classappend="${#fields.hasErrors('idServicio')} ? 'field-error'">
+                                    <label for="idServicio">Servicio</label>
+                                    <select th:field="*{idServicio}">
+                                        <option value="">Seleccione...</option>
+                                        <option th:each="s : ${servicios}" th:value="${s.id}"
+                                                th:text="${s.nombre} + ' (' + ${s.duracionMin} + ' min)'">
+                                            Limpieza dental (45 min)
+                                        </option>
+                                    </select>
+                                    <span class="error-text" th:if="${#fields.hasErrors('idServicio')}"
+                                          th:errors="*{idServicio}">Seleccione un servicio.</span>
+                                </div>
+
+                                <div class="field" th:classappend="${#fields.hasErrors('fecha')} ? 'field-error'">
+                                    <label for="fecha">Fecha de la cita</label>
+                                    <input type="date" th:field="*{fecha}" min="2024-01-01">
+                                    <span class="error-text" th:if="${#fields.hasErrors('fecha')}"
+                                          th:errors="*{fecha}">Indique la fecha.</span>
+                                </div>
+
+                                <div class="field full"
+                                     id="horarios"
+                                     th:attr="data-url=@{/api/disponibilidad}">
+                                    <label>Horarios disponibles</label>
+                                    <input type="hidden" th:field="*{hora}" id="hora">
+                                    <div class="slots" id="lista-horarios">
+                                        <div class="slot-empty">
+                                            Seleccione odontologo, servicio y fecha para ver los horarios libres.
+                                        </div>
+                                    </div>
+                                    <span class="hint" id="horarios-detalle"></span>
+                                    <span class="error-text" th:if="${#fields.hasErrors('hora')}"
+                                          th:errors="*{hora}">Seleccione un horario.</span>
+                                </div>
+
+                                <div class="field full" th:classappend="${#fields.hasErrors('motivo')} ? 'field-error'">
+                                    <label for="motivo">Motivo de consulta (opcional)</label>
+                                    <textarea th:field="*{motivo}" maxlength="200"
+                                              placeholder="Ej. Dolor en molar inferior derecho desde hace tres dias"></textarea>
+                                    <span class="error-text" th:if="${#fields.hasErrors('motivo')}"
+                                          th:errors="*{motivo}"></span>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-2">
+                                <svg class="icon"><use href="#i-info"/></svg>
+                                <span>
+                                    El sistema valida automaticamente que el odontologo este libre durante toda la
+                                    duracion del servicio y que la cita caiga dentro de su horario de atencion.
+                                </span>
+                            </div>
+
+                            <div class="form-actions">
+                                <a class="btn btn-outline" th:href="@{/citas}">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon"><use href="#i-check"/></svg> Confirmar reserva
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-clock"/></svg> Como funciona
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-confirmada"></span> Duracion por servicio</span>
+                                <span class="value">30 a 90 min</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-programada"></span> Horario de atencion</span>
+                                <span class="value">L-V 9:00 - 20:00</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-atendida"></span> Sabados</span>
+                                <span class="value">9:00 - 14:00</span>
+                            </div>
+                            <div class="alert alert-warning mt-2">
+                                <svg class="icon"><use href="#i-alert"/></svg>
+                                <span>Los horarios mostrados ya descuentan las citas programadas y confirmadas.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-bell"/></svg> Recordatorio automatico
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="small muted">
+                                Al confirmar la reserva, el sistema programa un recordatorio 24 horas antes
+                                de la cita. Se envia por correo electronico si el paciente tiene correo
+                                registrado; de lo contrario, por WhatsApp.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

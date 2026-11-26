@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Agenda de citas')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('agenda')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Agenda de citas', 'Consulta, reserva y seguimiento de las citas')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="card mb-2">
+                <div class="card-body">
+                    <form method="get" th:action="@{/citas}" class="filter-bar">
+                        <div class="field">
+                            <label for="fecha">Fecha</label>
+                            <input type="date" id="fecha" name="fecha" th:value="${fecha}">
+                        </div>
+                        <div class="field">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado">
+                                <option value="">Todos los estados</option>
+                                <option th:each="e : ${estados}" th:value="${e}" th:text="${e.etiqueta}"
+                                        th:selected="${estado != null and estado.name() == e.name()}">
+                                    Programada
+                                </option>
+                            </select>
+                        </div>
+                        <div class="field" th:if="${usuarioActual != null and !usuarioActual.odontologo}">
+                            <label for="idOdontologo">Odontologo</label>
+                            <select id="idOdontologo" name="idOdontologo">
+                                <option value="">Todos</option>
+                                <option th:each="o : ${odontologos}" th:value="${o.id}"
+                                        th:text="${o.nombreCompleto}"
+                                        th:selected="${idOdontologo != null and idOdontologo == o.id}">
+                                    Dr. Carlos Ramos
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="icon"><use href="#i-search"/></svg> Filtrar
+                        </button>
+                        <a class="btn btn-outline" th:href="@{/citas/nueva}">
+                            <svg class="icon"><use href="#i-plus"/></svg> Reservar cita
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-calendar"/></svg>
+                            <span th:text="${@fmt.fechaLarga(fecha)}">Martes 24 de noviembre</span>
+                        </div>
+                        <div class="card-sub">
+                            <span th:text="${#lists.size(citas)}">0</span> citas encontradas
+                            <span th:if="${estado != null}" th:text="' - filtro: ' + ${estado.etiqueta}"></span>
+                        </div>
+                    </div>
+                    <div class="row-actions">
+                        <a class="btn btn-outline btn-sm"
+                           th:href="@{/citas(fecha=${fecha.minusDays(1)},estado=${estado},idOdontologo=${idOdontologo})}"
+                           title="Dia anterior">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg>
+                        </a>
+                        <a class="btn btn-outline btn-sm" th:href="@{/citas}">Hoy</a>
+                        <a class="btn btn-outline btn-sm"
+                           th:href="@{/citas(fecha=${fecha.plusDays(1)},estado=${estado},idOdontologo=${idOdontologo})}"
+                           title="Dia siguiente">
+                            <svg class="icon"><use href="#i-arrow-right"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(citas)}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Paciente</th>
+                            <th>Servicio</th>
+                            <th>Odontologo</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${citas}">
+                            <td class="cell-nowrap">
+                                <div class="cell-strong" th:text="${@fmt.hora(c.inicio)}">09:00</div>
+                                <div class="cell-sub" th:text="${c.duracionMin} + ' min'">45 min</div>
+                            </td>
+                            <td>
+                                <div class="person">
+                                    <div class="avatar avatar-sm" th:text="${#strings.substring(c.paciente.nombres,0,1)}">M</div>
+                                    <div>
+                                        <div class="cell-strong" th:text="${c.paciente.nombreCompleto}">Maria Quispe</div>
+                                        <div class="cell-sub" th:text="'DNI ' + ${c.paciente.dni}">DNI 70123456</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:text="${c.servicio.nombre}">Limpieza dental</div>
+                                <div class="cell-sub" th:text="${@fmt.moneda(c.servicio.precio)}">S/ 90.00</div>
+                            </td>
+                            <td>
+                                <div th:text="${c.odontologo.nombreCompleto}">Dr. Carlos Ramos</div>
+                                <div class="cell-sub" th:text="${c.odontologo.especialidad.nombre}">General</div>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${c.estado.css}"
+                                      th:text="${c.estado.etiqueta}">Programada</span>
+                            </td>
+                            <td>
+                                <div class="row-actions" style="justify-content:flex-end">
+                                    <a class="btn btn-outline btn-sm" th:href="@{/citas/{id}(id=${c.id})}">
+                                        Ver detalle
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty" th:if="${#lists.isEmpty(citas)}">
+                    <svg class="icon"><use href="#i-calendar"/></svg>
+                    <div>No hay citas para los filtros seleccionados.</div>
+                    <a class="btn btn-primary btn-sm mt-1" th:href="@{/citas/nueva}">Reservar una cita</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

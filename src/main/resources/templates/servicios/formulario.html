@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Servicio')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('servicios')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar(${modo == 'editar' ? 'Editar servicio' : 'Nuevo servicio'}, 'Duracion, precio y especialidades habilitadas')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-grid"/></svg> Datos del servicio
+                        </div>
+                        <a class="btn btn-ghost btn-sm" th:href="@{/servicios}">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg> Volver
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${modo == 'editar'} ? @{/servicios/{id}(id=${servicio.id})} : @{/servicios}"
+                              method="post" th:object="${form}">
+                            <div class="form-grid">
+                                <div class="field full" th:classappend="${#fields.hasErrors('nombre')} ? 'field-error'">
+                                    <label for="nombre">Nombre del servicio</label>
+                                    <input type="text" th:field="*{nombre}" maxlength="80"
+                                           placeholder="Ej. Limpieza dental (profilaxis)">
+                                    <span class="error-text" th:if="${#fields.hasErrors('nombre')}"
+                                          th:errors="*{nombre}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('duracionMin')} ? 'field-error'">
+                                    <label for="duracionMin">Duracion (minutos)</label>
+                                    <input type="number" th:field="*{duracionMin}" min="5" max="480" step="5">
+                                    <span class="error-text" th:if="${#fields.hasErrors('duracionMin')}"
+                                          th:errors="*{duracionMin}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('precio')} ? 'field-error'">
+                                    <label for="precio">Precio referencial (S/)</label>
+                                    <input type="number" th:field="*{precio}" min="0" step="0.01">
+                                    <span class="error-text" th:if="${#fields.hasErrors('precio')}"
+                                          th:errors="*{precio}"></span>
+                                </div>
+
+                                <div class="field full" th:classappend="${#fields.hasErrors('especialidades')} ? 'field-error'">
+                                    <label>Especialidades que pueden realizar el servicio</label>
+                                    <div class="checkbox-row">
+                                        <label class="check" th:each="e : ${especialidades}">
+                                            <input type="checkbox" th:field="*{especialidades}" th:value="${e.id}">
+                                            <span th:text="${e.nombre}">Odontologia general</span>
+                                        </label>
+                                    </div>
+                                    <span class="error-text" th:if="${#fields.hasErrors('especialidades')}"
+                                          th:errors="*{especialidades}"></span>
+                                </div>
+
+                                <div class="field full">
+                                    <label class="check" style="width:max-content">
+                                        <input type="checkbox" th:field="*{activo}">
+                                        <span>Disponible para reservas</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <a class="btn btn-outline" th:href="@{/servicios}">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon"><use href="#i-check"/></svg>
+                                    <span th:text="${modo == 'editar' ? 'Guardar cambios' : 'Registrar servicio'}">
+                                        Registrar servicio
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-info"/></svg> Relacion con la agenda
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="small muted">
+                            Solo los odontologos cuya especialidad este habilitada podran atender este servicio.
+                            El sistema usa la duracion para bloquear el rango completo en la agenda.
+                        </p>
+                        <div class="divider"></div>
+                        <div class="stat-line">
+                            <span class="label">Consulta y diagnostico</span>
+                            <span class="value">30 min</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Limpieza dental</span>
+                            <span class="value">45 min</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Endodoncia</span>
+                            <span class="value">90 min</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Blanqueamiento</span>
+                            <span class="value">75 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

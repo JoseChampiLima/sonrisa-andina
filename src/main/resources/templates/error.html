@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+
+<body>
+<div class="login-page">
+
+    <section class="login-brand">
+        <div th:replace="~{fragments/layout :: sprite}"></div>
+        <div class="brand">
+            <div class="brand-mark">
+                <svg class="icon"><use href="#i-tooth"/></svg>
+            </div>
+            <div>
+                <div class="brand-name">Sonrisa Andina</div>
+                <div class="brand-sub">Clinica dental</div>
+            </div>
+        </div>
+        <div class="login-hero">
+            <h1>Algo no salio como esperabamos</h1>
+            <p th:text="${message != null ? message : 'Ocurrio un error al procesar la solicitud.'}">
+                Ocurrio un error al procesar la solicitud.
+            </p>
+        </div>
+        <div class="login-foot">Soporte: administracion del sistema</div>
+    </section>
+
+    <section class="login-panel">
+        <div class="login-card">
+            <h2 th:text="'Error ' + ${status != null ? status : 500}">Error 500</h2>
+            <p class="login-sub">
+                Codigo <span th:text="${error != null ? error : 'Error interno'}">Error interno</span>.
+                Revise el log del servidor para mas detalle.
+            </p>
+            <div class="grid" style="gap:10px">
+                <a class="btn btn-primary btn-block" th:href="@{/}">
+                    <svg class="icon"><use href="#i-home"/></svg> Volver al panel
+                </a>
+                <a class="btn btn-outline btn-block" th:href="@{/login}">Iniciar sesion nuevamente</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

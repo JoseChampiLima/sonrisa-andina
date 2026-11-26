@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Acceso denegado')}"></head>
+
+<body>
+<div class="login-page">
+
+    <section class="login-brand">
+        <div th:replace="~{fragments/layout :: sprite}"></div>
+        <div class="brand">
+            <div class="brand-mark">
+                <svg class="icon"><use href="#i-tooth"/></svg>
+            </div>
+            <div>
+                <div class="brand-name">Sonrisa Andina</div>
+                <div class="brand-sub">Clinica dental</div>
+            </div>
+        </div>
+        <div class="login-hero">
+            <h1>Acceso restringido</h1>
+            <p>Su cuenta no tiene permisos para esta seccion del sistema.</p>
+        </div>
+        <div class="login-foot">Clinica Dental Sonrisa Andina</div>
+    </section>
+
+    <section class="login-panel">
+        <div class="login-card">
+            <div class="alert alert-warning">
+                <svg class="icon"><use href="#i-lock"/></svg>
+                <span>La seccion solicitada esta reservada para otro rol. Si necesita acceso,
+                    solicite la habilitacion al administrador del sistema.</span>
+            </div>
+            <div class="grid" style="gap:10px">
+                <a class="btn btn-primary btn-block" th:href="@{/}">
+                    <svg class="icon"><use href="#i-home"/></svg> Volver al inicio
+                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button class="btn btn-outline btn-block" type="submit">
+                        <svg class="icon"><use href="#i-logout"/></svg> Cerrar sesion
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

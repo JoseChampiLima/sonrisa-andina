@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Servicios')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('servicios')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Servicios', 'Catalogo de tratamientos, duracion y precio referencial')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="section-head">
+                <div>
+                    <h2>Catalogo de servicios</h2>
+                    <p class="muted small">La duracion de cada servicio define el espacio que ocupa en la agenda.</p>
+                </div>
+                <a class="btn btn-primary" th:href="@{/servicios/nuevo}">
+                    <svg class="icon"><use href="#i-plus"/></svg> Nuevo servicio
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="table-wrap" th:if="${!#lists.isEmpty(servicios)}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Duracion</th>
+                            <th>Precio</th>
+                            <th>Especialidades habilitadas</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${servicios}">
+                            <td>
+                                <div class="cell-strong" th:text="${s.nombre}">Limpieza dental</div>
+                                <div class="cell-sub" th:text="'Codigo S-' + ${s.id}">Codigo S-2</div>
+                            </td>
+                            <td class="cell-nowrap" th:text="${s.duracionMin} + ' min'">45 min</td>
+                            <td class="cell-nowrap" th:text="${@fmt.moneda(s.precio)}">S/ 90.00</td>
+                            <td>
+                                <span class="tag" style="margin:2px 4px 2px 0"
+                                      th:each="e : ${s.especialidades}" th:text="${e.nombre}">General</span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${s.activo} ? 'badge-atendida' : 'badge-cancelada'"
+                                      th:text="${s.activo ? 'Activo' : 'Inactivo'}">Activo</span>
+                            </td>
+                            <td>
+                                <div class="row-actions" style="justify-content:flex-end">
+                                    <a class="btn btn-outline btn-sm" th:href="@{/servicios/{id}/editar(id=${s.id})}">
+                                        Editar
+                                    </a>
+                                    <form th:action="@{/servicios/{id}/estado(id=${s.id})}" method="post">
+                                        <input type="hidden" name="activo" th:value="${!s.activo}">
+                                        <button type="submit" class="btn btn-sm"
+                                                th:classappend="${s.activo} ? 'btn-danger' : 'btn-soft'"
+                                                th:text="${s.activo ? 'Desactivar' : 'Activar'}">Desactivar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty" th:if="${#lists.isEmpty(servicios)}">
+                    <svg class="icon"><use href="#i-grid"/></svg>
+                    <div>No hay servicios registrados en el catalogo.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

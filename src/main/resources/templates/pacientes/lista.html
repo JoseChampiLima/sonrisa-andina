@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Pacientes')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('pacientes')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Pacientes', 'Registro y consulta de los pacientes de la clinica')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="card mb-2">
+                <div class="card-body">
+                    <form method="get" th:action="@{/pacientes}" class="filter-bar">
+                        <div class="field grow">
+                            <label for="q">Buscar por nombre, apellido o DNI</label>
+                            <input type="search" id="q" name="q" th:value="${q}" placeholder="Ej. Quispe o 70123456">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="icon"><use href="#i-search"/></svg> Buscar
+                        </button>
+                        <a class="btn btn-outline" th:href="@{/pacientes}">Limpiar</a>
+                        <a class="btn btn-soft" th:href="@{/pacientes/nuevo}">
+                            <svg class="icon"><use href="#i-plus"/></svg> Nuevo paciente
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon"><use href="#i-users"/></svg> Listado de pacientes
+                    </div>
+                    <span class="tag">
+                        <span th:text="${#lists.size(pacientes)}">4</span> registrados
+                    </span>
+                </div>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(pacientes)}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Telefono</th>
+                            <th>Correo</th>
+                            <th>Registrado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${pacientes}">
+                            <td>
+                                <div class="person">
+                                    <div class="avatar avatar-sm" th:text="${#strings.substring(p.nombres,0,1)}">M</div>
+                                    <div>
+                                        <div class="cell-strong">
+                                            <a th:href="@{/pacientes/{id}(id=${p.id})}"
+                                               th:text="${p.nombreCompleto}">Maria Quispe</a>
+                                        </div>
+                                        <div class="cell-sub" th:text="'DNI ' + ${p.dni}">DNI 70123456</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="cell-nowrap" th:text="${p.telefono}">987654321</td>
+                            <td th:text="${p.correo != null ? p.correo : 'Sin correo'}">maria@example.com</td>
+                            <td class="cell-nowrap" th:text="${@fmt.fecha(p.fechaRegistro.toLocalDate())}">24/11/2026</td>
+                            <td>
+                                <div class="row-actions" style="justify-content:flex-end">
+                                    <a class="btn btn-outline btn-sm" th:href="@{/pacientes/{id}(id=${p.id})}">Ver</a>
+                                    <a class="btn btn-outline btn-sm" th:href="@{/pacientes/{id}/editar(id=${p.id})}">Editar</a>
+                                    <a class="btn btn-soft btn-sm"
+                                       th:href="@{/citas/nueva(idPaciente=${p.id})}">Nueva cita</a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty" th:if="${#lists.isEmpty(pacientes)}">
+                    <svg class="icon"><use href="#i-users"/></svg>
+                    <div>No se encontraron pacientes con ese criterio.</div>
+                    <a class="btn btn-primary btn-sm mt-1" th:href="@{/pacientes/nuevo}">Registrar paciente</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

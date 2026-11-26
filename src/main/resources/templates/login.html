@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Iniciar sesion')}"></head>
+
+<body>
+<div class="login-page">
+
+    <section class="login-brand">
+        <div th:replace="~{fragments/layout :: sprite}"></div>
+
+        <div class="brand">
+            <div class="brand-mark">
+                <svg class="icon"><use href="#i-tooth"/></svg>
+            </div>
+            <div>
+                <div class="brand-name">Sonrisa Andina</div>
+                <div class="brand-sub">Clinica dental</div>
+            </div>
+        </div>
+
+        <div class="login-hero">
+            <h1>La agenda de la clinica, sin cruces y sin cuaderno.</h1>
+            <p>
+                Sistema de reserva y gestion de citas para la Clinica Dental Sonrisa Andina.
+                Valida la disponibilidad de cada odontologo segun la duracion del tratamiento,
+                envia recordatorios automaticos y genera reportes de atencion.
+            </p>
+            <div class="login-features">
+                <div class="login-feature">
+                    <svg class="icon"><use href="#i-check"/></svg>
+                    Agenda centralizada con validacion automatica de horarios
+                </div>
+                <div class="login-feature">
+                    <svg class="icon"><use href="#i-check"/></svg>
+                    Recordatorios por correo o WhatsApp 24 horas antes
+                </div>
+                <div class="login-feature">
+                    <svg class="icon"><use href="#i-check"/></svg>
+                    Reportes de citas atendidas, canceladas y ausentes
+                </div>
+            </div>
+        </div>
+
+        <div class="login-foot">
+            Jesus Maria, Lima - Peru &middot; Proyecto academico de Programacion Orientada a Objetos
+        </div>
+    </section>
+
+    <section class="login-panel">
+        <div class="login-card">
+            <h2>Bienvenido de nuevo</h2>
+            <p class="login-sub">Ingrese sus credenciales para gestionar la agenda de la clinica.</p>
+
+            <div class="alert alert-error" th:if="${param.error}">
+                <svg class="icon"><use href="#i-alert"/></svg>
+                <span>Usuario o contrasena incorrectos. Verifique sus datos.</span>
+            </div>
+            <div class="alert alert-success" th:if="${param.logout}">
+                <svg class="icon"><use href="#i-check-circle"/></svg>
+                <span>Sesion cerrada correctamente. Hasta pronto.</span>
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="field">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" autocomplete="username"
+                           placeholder="Ej. recepcion" required autofocus>
+                </div>
+                <div class="field">
+                    <label for="password">Contrasena</label>
+                    <input type="password" id="password" name="password"
+                           autocomplete="current-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <svg class="icon"><use href="#i-lock"/></svg>
+                    Ingresar al sistema
+                </button>
+            </form>
+
+            <div class="demo-users">
+                <h4>Cuentas de demostracion</h4>
+                <div class="demo-grid">
+                    <button type="button" class="demo-item" data-demo-user="recepcion" data-demo-pass="recepcion123">
+                        <strong>Recepcion</strong> recepcion / recepcion123
+                    </button>
+                    <button type="button" class="demo-item" data-demo-user="admin" data-demo-pass="admin123">
+                        <strong>Administrador</strong> admin / admin123
+                    </button>
+                    <button type="button" class="demo-item" data-demo-user="cramos" data-demo-pass="doctor123">
+                        <strong>Odontologo</strong> cramos / doctor123
+                    </button>
+                    <button type="button" class="demo-item" data-demo-user="paciente" data-demo-pass="paciente123">
+                        <strong>Paciente</strong> paciente / paciente123
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

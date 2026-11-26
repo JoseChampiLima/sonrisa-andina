@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Reportes')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('reportes')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Reportes', 'Indicadores de citas por periodo, servicio y odontologo')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="card mb-2">
+                <div class="card-body">
+                    <form method="get" th:action="@{/reportes}" class="filter-bar">
+                        <div class="field">
+                            <label for="desde">Desde</label>
+                            <input type="date" id="desde" name="desde" th:value="${desde}">
+                        </div>
+                        <div class="field">
+                            <label for="hasta">Hasta</label>
+                            <input type="date" id="hasta" name="hasta" th:value="${hasta}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="icon"><use href="#i-chart"/></svg> Generar reporte
+                        </button>
+                        <span class="tag" th:text="${@fmt.fecha(desde)} + ' al ' + ${@fmt.fecha(hasta)}">
+                            01/11/2026 al 30/11/2026
+                        </span>
+                    </form>
+                </div>
+            </div>
+
+            <div class="grid grid-4">
+                <div class="kpi">
+                    <div class="kpi-icon">
+                        <svg class="icon"><use href="#i-calendar"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${resumen.total()}">0</div>
+                        <div class="kpi-label">Citas del periodo</div>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-icon">
+                        <svg class="icon"><use href="#i-check"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${resumen.atendidas()}">0</div>
+                        <div class="kpi-label">Atendidas</div>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-icon violet">
+                        <svg class="icon"><use href="#i-user"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${resumen.ausentes()}">0</div>
+                        <div class="kpi-label">Ausentes</div>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-icon rose">
+                        <svg class="icon"><use href="#i-alert"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${@fmt.porcentaje(resumen.tasaInasistencia())}">0 %</div>
+                        <div class="kpi-label">Tasa de inasistencia</div>
+                    </div>
+                    <div class="kpi-note">Meta: menos de 10 %</div>
+                </div>
+            </div>
+
+            <div class="grid grid-main mt-2">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-chart"/></svg> Citas por servicio
+                            </div>
+                            <span class="tag">
+                                <span th:text="${resumen.total()}">0</span> citas
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="bars" th:if="${!#lists.isEmpty(barrasServicio)}">
+                                <div class="bar-row" th:each="b : ${barrasServicio}">
+                                    <span class="bar-label" th:text="${b.etiqueta}" th:title="${b.etiqueta}">Limpieza</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill" th:style="'width:' + ${b.porcentaje} + '%'"></div>
+                                    </div>
+                                    <span class="bar-value" th:text="${b.total}">0</span>
+                                </div>
+                            </div>
+                            <div class="empty" th:if="${#lists.isEmpty(barrasServicio)}">
+                                Sin citas en el periodo seleccionado.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-doctor"/></svg> Citas por odontologo
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="bars" th:if="${!#lists.isEmpty(barrasOdontologo)}">
+                                <div class="bar-row" th:each="b : ${barrasOdontologo}">
+                                    <span class="bar-label" th:text="${b.etiqueta}" th:title="${b.etiqueta}">Carlos Ramos</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill violet" th:style="'width:' + ${b.porcentaje} + '%'"></div>
+                                    </div>
+                                    <span class="bar-value" th:text="${b.total}">0</span>
+                                </div>
+                            </div>
+                            <div class="empty" th:if="${#lists.isEmpty(barrasOdontologo)}">
+                                Sin citas en el periodo seleccionado.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-list"/></svg> Distribucion por estado
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-programada"></span> Programadas</span>
+                                <span class="value" th:text="${resumen.programadas()}">0</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-confirmada"></span> Confirmadas</span>
+                                <span class="value" th:text="${resumen.confirmadas()}">0</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-atendida"></span> Atendidas</span>
+                                <span class="value" th:text="${resumen.atendidas()}">0</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-ausente"></span> Ausentes</span>
+                                <span class="value" th:text="${resumen.ausentes()}">0</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-cancelada"></span> Canceladas</span>
+                                <span class="value" th:text="${resumen.canceladas()}">0</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label"><span class="dot dot-reprogramada"></span> Reprogramadas</span>
+                                <span class="value" th:text="${resumen.reprogramadas()}">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-alert"/></svg> Indicadores clave
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-pair">
+                                <span class="label">Tasa de inasistencia</span>
+                                <span class="value" th:text="${@fmt.porcentaje(resumen.tasaInasistencia())}">0 %</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Tasa de cancelacion</span>
+                                <span class="value" th:text="${@fmt.porcentaje(resumen.tasaCancelacion())}">0 %</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Citas concretadas</span>
+                                <span class="value" th:text="${resumen.atendidas()} + ' de ' + ${resumen.total()}">0</span>
+                            </div>
+                            <div class="alert alert-info mt-2">
+                                <svg class="icon"><use href="#i-info"/></svg>
+                                <span>La tasa de inasistencia se calcula sobre las citas atendidas y ausentes
+                                    del periodo (no incluye canceladas).</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

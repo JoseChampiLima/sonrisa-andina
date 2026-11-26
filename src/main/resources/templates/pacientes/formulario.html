@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Paciente')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('pacientes')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar(${modo == 'editar' ? 'Editar paciente' : 'Nuevo paciente'}, 'Datos personales y de contacto')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-user"/></svg>
+                            <span th:text="${modo == 'editar' ? 'Datos del paciente' : 'Registro de paciente'}">
+                                Registro de paciente
+                            </span>
+                        </div>
+                        <a class="btn btn-ghost btn-sm" th:href="@{/pacientes}">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg> Volver
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${modo == 'editar'} ? @{/pacientes/{id}(id=${paciente.id})} : @{/pacientes}"
+                              method="post" th:object="${form}">
+                            <div class="form-grid">
+                                <div class="field" th:classappend="${#fields.hasErrors('dni')} ? 'field-error'">
+                                    <label for="dni">DNI</label>
+                                    <input type="text" th:field="*{dni}" maxlength="8" inputmode="numeric"
+                                           placeholder="8 digitos">
+                                    <span class="error-text" th:if="${#fields.hasErrors('dni')}"
+                                          th:errors="*{dni}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('telefono')} ? 'field-error'">
+                                    <label for="telefono">Telefono</label>
+                                    <input type="text" th:field="*{telefono}" maxlength="15" inputmode="numeric"
+                                           placeholder="987654321">
+                                    <span class="error-text" th:if="${#fields.hasErrors('telefono')}"
+                                          th:errors="*{telefono}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('nombres')} ? 'field-error'">
+                                    <label for="nombres">Nombres</label>
+                                    <input type="text" th:field="*{nombres}" maxlength="80" placeholder="Maria">
+                                    <span class="error-text" th:if="${#fields.hasErrors('nombres')}"
+                                          th:errors="*{nombres}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('apellidos')} ? 'field-error'">
+                                    <label for="apellidos">Apellidos</label>
+                                    <input type="text" th:field="*{apellidos}" maxlength="80" placeholder="Quispe Huaman">
+                                    <span class="error-text" th:if="${#fields.hasErrors('apellidos')}"
+                                          th:errors="*{apellidos}"></span>
+                                </div>
+                                <div class="field full" th:classappend="${#fields.hasErrors('correo')} ? 'field-error'">
+                                    <label for="correo">Correo electronico (opcional)</label>
+                                    <input type="email" th:field="*{correo}" maxlength="120"
+                                           placeholder="paciente@correo.com">
+                                    <span class="error-text" th:if="${#fields.hasErrors('correo')}"
+                                          th:errors="*{correo}"></span>
+                                    <span class="hint">Se usa para enviar el recordatorio automatico de la cita.</span>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <a class="btn btn-outline" th:href="@{/pacientes}">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon"><use href="#i-check"/></svg>
+                                    <span th:text="${modo == 'editar' ? 'Guardar cambios' : 'Registrar paciente'}">
+                                        Registrar paciente
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-info"/></svg> Datos del paciente
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="small muted">
+                            La informacion personal se almacena de forma centralizada y solo el personal
+                            autorizado puede consultarla, en cumplimiento de la Ley N. 29733 de Proteccion
+                            de Datos Personales.
+                        </p>
+                        <div class="divider"></div>
+                        <div class="stat-line">
+                            <span class="label">DNI</span>
+                            <span class="value">8 digitos</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Telefono</span>
+                            <span class="value">6 a 15 digitos</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Correo</span>
+                            <span class="value">Opcional</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

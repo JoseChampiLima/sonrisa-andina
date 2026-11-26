@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Recordatorios')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('recordatorios')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Recordatorios', 'Bandeja de avisos automaticos por correo y WhatsApp')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-3">
+                <div class="kpi">
+                    <div class="kpi-icon amber">
+                        <svg class="icon"><use href="#i-bell"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${#lists.size(pendientes)}">0</div>
+                        <div class="kpi-label">Recordatorios pendientes</div>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-icon">
+                        <svg class="icon"><use href="#i-send"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-label" style="margin-bottom:4px">Envio automatico</div>
+                        <div class="cell-strong">Cada minuto</div>
+                        <div class="kpi-note">Envia los avisos cuya hora ya se cumplio</div>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-icon violet">
+                        <svg class="icon"><use href="#i-clock"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-label" style="margin-bottom:4px">Anticipacion</div>
+                        <div class="cell-strong">24 horas antes</div>
+                        <div class="kpi-note">Configurable en application.properties</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-bell"/></svg> Bandeja de notificaciones
+                        </div>
+                        <div class="card-sub">Los envios se simulan en el log del servidor si no hay SMTP configurado.</div>
+                    </div>
+                    <form th:action="@{/recordatorios/procesar}" method="post">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <svg class="icon"><use href="#i-refresh"/></svg> Procesar pendientes ahora
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(notificaciones)}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Cita</th>
+                            <th>Canal</th>
+                            <th>Destinatario</th>
+                            <th>Mensaje</th>
+                            <th>Programado</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="n : ${notificaciones}">
+                            <td class="cell-nowrap">
+                                <a th:href="@{/citas/{id}(id=${n.cita.id})}" th:text="'#' + ${n.cita.id}">#12</a>
+                                <div class="cell-sub" th:text="${@fmt.fecha(n.cita.fecha)}">24/11/2026</div>
+                            </td>
+                            <td><span class="tag" th:text="${n.canal}">CORREO</span></td>
+                            <td th:text="${n.destinatario}">correo@dominio.com</td>
+                            <td style="max-width:280px">
+                                <span class="cell-sub" th:text="${#strings.abbreviate(n.mensaje, 90)}">Recordatorio...</span>
+                            </td>
+                            <td class="cell-nowrap" th:text="${@fmt.fechaHora(n.programadaPara)}">24/11/2026 09:00</td>
+                            <td>
+                                <span class="badge" th:classappend="${n.estado.css}"
+                                      th:text="${n.estado.etiqueta}">Pendiente</span>
+                            </td>
+                            <td>
+                                <div class="row-actions" style="justify-content:flex-end">
+                                    <form th:if="${n.estado.name() != 'ENVIADA'}"
+                                          th:action="@{/recordatorios/{id}/enviar(id=${n.id})}" method="post">
+                                        <button type="submit" class="btn btn-soft btn-sm">
+                                            <svg class="icon"><use href="#i-send"/></svg> Enviar
+                                        </button>
+                                    </form>
+                                    <form th:if="${n.estado.name() == 'FALLIDA'}"
+                                          th:action="@{/recordatorios/{id}/reintentar(id=${n.id})}" method="post">
+                                        <button type="submit" class="btn btn-outline btn-sm">
+                                            <svg class="icon"><use href="#i-refresh"/></svg> Reintentar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty" th:if="${#lists.isEmpty(notificaciones)}">
+                    <svg class="icon"><use href="#i-bell"/></svg>
+                    <div>Aun no hay recordatorios generados.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

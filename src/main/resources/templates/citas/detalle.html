@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Detalle de la cita')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('agenda')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Detalle de la cita', 'Informacion, estado y recordatorios')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="section-head">
+                <div>
+                    <h2 th:text="'Cita #' + ${cita.id}">Cita #12</h2>
+                    <p class="muted small">
+                        Registrada el <span th:text="${@fmt.fechaHora(cita.creadoEn)}">24/11/2026 10:00</span>
+                        &middot; Ultima actualizacion <span th:text="${@fmt.fechaHora(cita.actualizadoEn)}">24/11/2026 10:00</span>
+                    </p>
+                </div>
+                <div class="row-actions">
+                    <span class="badge" th:classappend="${cita.estado.css}" th:text="${cita.estado.etiqueta}">Programada</span>
+                    <a class="btn btn-outline btn-sm" th:href="@{/citas(fecha=${cita.fecha})}">
+                        <svg class="icon"><use href="#i-arrow-left"/></svg> Agenda del dia
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-main">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-calendar"/></svg> Datos de la cita
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-pair">
+                                <span class="label">Paciente</span>
+                                <span class="value">
+                                    <a th:href="@{/pacientes/{id}(id=${cita.paciente.id})}"
+                                       th:text="${cita.paciente.nombreCompleto}">Maria Quispe</a>
+                                    <span class="muted" th:text="' (DNI ' + ${cita.paciente.dni} + ')'"></span>
+                                </span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Telefono / correo</span>
+                                <span class="value">
+                                    <span th:text="${cita.paciente.telefono}">987654321</span>
+                                    <span class="muted"
+                                          th:text="${cita.paciente.correo != null ? ' / ' + cita.paciente.correo : ''}"></span>
+                                </span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Odontologo</span>
+                                <span class="value" th:text="${cita.odontologo.nombreCompleto}">Carlos Ramos</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Servicio</span>
+                                <span class="value" th:text="${cita.servicio.nombre}">Limpieza dental</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Fecha y hora</span>
+                                <span class="value">
+                                    <span th:text="${@fmt.fechaLarga(cita.fecha)}">Martes 24 de noviembre</span>
+                                    &middot;
+                                    <span th:text="${@fmt.hora(cita.inicio)} + ' - ' + ${@fmt.hora(cita.fin)}">09:00 - 09:45</span>
+                                </span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Duracion</span>
+                                <span class="value" th:text="${cita.duracionMin} + ' minutos'">45 minutos</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Precio referencial</span>
+                                <span class="value" th:text="${@fmt.moneda(cita.servicio.precio)}">S/ 90.00</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Motivo</span>
+                                <span class="value" th:text="${cita.motivo != null ? cita.motivo : 'No registrado'}">
+                                    Control
+                                </span>
+                            </div>
+                            <div class="info-pair" th:if="${cita.citaOrigen != null}">
+                                <span class="label">Cita de origen</span>
+                                <span class="value">
+                                    <a th:href="@{/citas/{id}(id=${cita.citaOrigen.id})}"
+                                       th:text="'#' + ${cita.citaOrigen.id}">#10</a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-bell"/></svg> Recordatorios de esta cita
+                            </div>
+                            <form th:action="@{/citas/{id}/recordatorio(id=${cita.id})}" method="post">
+                                <button type="submit" class="btn btn-soft btn-sm">
+                                    <svg class="icon"><use href="#i-refresh"/></svg> Reprogramar recordatorio
+                                </button>
+                            </form>
+                        </div>
+                        <div class="table-wrap" th:if="${!#lists.isEmpty(notificaciones)}">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Destinatario</th>
+                                    <th>Programado</th>
+                                    <th>Enviado</th>
+                                    <th>Estado</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="n : ${notificaciones}">
+                                    <td><span class="tag" th:text="${n.canal}">CORREO</span></td>
+                                    <td th:text="${n.destinatario}">correo@dominio.com</td>
+                                    <td class="cell-nowrap" th:text="${@fmt.fechaHora(n.programadaPara)}">24/11/2026 09:00</td>
+                                    <td class="cell-nowrap"
+                                        th:text="${n.fechaEnvio != null ? @fmt.fechaHora(n.fechaEnvio) : '-'}">-</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${n.estado.css}"
+                                              th:text="${n.estado.etiqueta}">Pendiente</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="empty" th:if="${#lists.isEmpty(notificaciones)}">
+                            No hay recordatorios registrados para esta cita.
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-edit"/></svg> Acciones
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid" style="gap:10px">
+                                <form th:if="${cita.estado.name() == 'PROGRAMADA'}"
+                                      th:action="@{/citas/{id}/confirmar(id=${cita.id})}" method="post">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <svg class="icon"><use href="#i-check-circle"/></svg> Confirmar asistencia
+                                    </button>
+                                </form>
+
+                                <a th:if="${cita.sePuedeReprogramar()}" class="btn btn-outline btn-block"
+                                   th:href="@{/citas/{id}/reprogramar(id=${cita.id})}">
+                                    <svg class="icon"><use href="#i-calendar"/></svg> Reprogramar cita
+                                </a>
+
+                                <form th:if="${cita.estado.name() == 'PROGRAMADA' or cita.estado.name() == 'CONFIRMADA'}"
+                                      th:action="@{/citas/{id}/atendida(id=${cita.id})}" method="post">
+                                    <button type="submit" class="btn btn-soft btn-block">
+                                        <svg class="icon"><use href="#i-check"/></svg> Marcar como atendida
+                                    </button>
+                                </form>
+
+                                <form th:if="${cita.estado.name() == 'PROGRAMADA' or cita.estado.name() == 'CONFIRMADA'}"
+                                      th:action="@{/citas/{id}/ausente(id=${cita.id})}" method="post"
+                                      data-confirm="¿Confirma que el paciente no asistio a la cita?">
+                                    <button type="submit" class="btn btn-outline btn-block">
+                                        <svg class="icon"><use href="#i-user"/></svg> Registrar ausencia
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <form th:if="${cita.estado.name() == 'PROGRAMADA' or cita.estado.name() == 'CONFIRMADA'}"
+                                  th:action="@{/citas/{id}/cancelar(id=${cita.id})}" method="post"
+                                  data-confirm="¿Confirma que desea cancelar esta cita? El horario quedara libre.">
+                                <div class="field">
+                                    <label for="motivoCancelacion">Motivo de cancelacion (opcional)</label>
+                                    <input type="text" id="motivoCancelacion" name="motivo" maxlength="200"
+                                           placeholder="Ej. El paciente reprogramo su viaje">
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-block mt-1">
+                                    <svg class="icon"><use href="#i-x"/></svg> Cancelar la cita
+                                </button>
+                            </form>
+
+                            <div class="alert alert-info mt-2" th:if="${!cita.estaActiva()}">
+                                <svg class="icon"><use href="#i-info"/></svg>
+                                <span>Esta cita ya no admite cambios de agenda porque se encuentra
+                                    <strong th:text="${cita.estado.etiqueta}">atendida</strong>.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <p class="small muted">
+                                Recuerde registrar el resultado de la cita (atendida o ausente) el mismo dia.
+                                Esos datos alimentan el reporte de inasistencia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Odontologo')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('odontologos')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar(${modo == 'editar' ? 'Editar odontologo' : 'Nuevo odontologo'}, 'Datos profesionales y horario semanal')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-doctor"/></svg> Datos del profesional
+                        </div>
+                        <a class="btn btn-ghost btn-sm" th:href="@{/odontologos}">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg> Volver
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${modo == 'editar'} ? @{/odontologos/{id}(id=${odontologo.id})} : @{/odontologos}"
+                              method="post" th:object="${form}">
+                            <div class="form-grid">
+                                <div class="field" th:classappend="${#fields.hasErrors('dni')} ? 'field-error'">
+                                    <label for="dni">DNI</label>
+                                    <input type="text" th:field="*{dni}" maxlength="8" placeholder="70000001">
+                                    <span class="error-text" th:if="${#fields.hasErrors('dni')}"
+                                          th:errors="*{dni}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('nroColegiatura')} ? 'field-error'">
+                                    <label for="nroColegiatura">Nro. de colegiatura (COP)</label>
+                                    <input type="text" th:field="*{nroColegiatura}" maxlength="10" placeholder="10001">
+                                    <span class="error-text" th:if="${#fields.hasErrors('nroColegiatura')}"
+                                          th:errors="*{nroColegiatura}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('nombres')} ? 'field-error'">
+                                    <label for="nombres">Nombres</label>
+                                    <input type="text" th:field="*{nombres}" maxlength="80" placeholder="Carlos">
+                                    <span class="error-text" th:if="${#fields.hasErrors('nombres')}"
+                                          th:errors="*{nombres}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('apellidos')} ? 'field-error'">
+                                    <label for="apellidos">Apellidos</label>
+                                    <input type="text" th:field="*{apellidos}" maxlength="80" placeholder="Ramos Quispe">
+                                    <span class="error-text" th:if="${#fields.hasErrors('apellidos')}"
+                                          th:errors="*{apellidos}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('telefono')} ? 'field-error'">
+                                    <label for="telefono">Telefono</label>
+                                    <input type="text" th:field="*{telefono}" maxlength="15" placeholder="900000001">
+                                    <span class="error-text" th:if="${#fields.hasErrors('telefono')}"
+                                          th:errors="*{telefono}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('idEspecialidad')} ? 'field-error'">
+                                    <label for="idEspecialidad">Especialidad</label>
+                                    <select th:field="*{idEspecialidad}">
+                                        <option value="">Seleccione...</option>
+                                        <option th:each="e : ${especialidades}" th:value="${e.id}"
+                                                th:text="${e.nombre}">Odontologia general</option>
+                                    </select>
+                                    <span class="error-text" th:if="${#fields.hasErrors('idEspecialidad')}"
+                                          th:errors="*{idEspecialidad}"></span>
+                                </div>
+
+                                <div class="field full">
+                                    <label>Dias de atencion</label>
+                                    <div class="checkbox-row">
+                                        <label class="check" th:each="d : ${diasSemana}">
+                                            <input type="checkbox" th:field="*{dias}" th:value="${d.valor}">
+                                            <span th:text="${d.nombre}">Lunes</span>
+                                        </label>
+                                    </div>
+                                    <span class="error-text" th:if="${#fields.hasErrors('dias')}" th:errors="*{dias}"></span>
+                                </div>
+
+                                <div class="field" th:classappend="${#fields.hasErrors('horaInicio')} ? 'field-error'">
+                                    <label for="horaInicio">Hora de inicio</label>
+                                    <input type="time" th:field="*{horaInicio}">
+                                    <span class="error-text" th:if="${#fields.hasErrors('horaInicio')}"
+                                          th:errors="*{horaInicio}"></span>
+                                </div>
+                                <div class="field" th:classappend="${#fields.hasErrors('horaFin')} ? 'field-error'">
+                                    <label for="horaFin">Hora de fin</label>
+                                    <input type="time" th:field="*{horaFin}">
+                                    <span class="error-text" th:if="${#fields.hasErrors('horaFin')}"
+                                          th:errors="*{horaFin}"></span>
+                                </div>
+
+                                <div class="field full">
+                                    <label class="check" style="width:max-content">
+                                        <input type="checkbox" th:field="*{activo}">
+                                        <span>Disponible para recibir citas</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <a class="btn btn-outline" th:href="@{/odontologos}">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon"><use href="#i-check"/></svg>
+                                    <span th:text="${modo == 'editar' ? 'Guardar cambios' : 'Registrar odontologo'}">
+                                        Registrar odontologo
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-clock"/></svg> Como se calcula la agenda
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="small muted">
+                            El horario registrado se aplica a todos los dias seleccionados. El sistema divide
+                            ese bloque en intervalos y descarta los que se cruzan con citas existentes,
+                            considerando la duracion real del servicio.
+                        </p>
+                        <div class="divider"></div>
+                        <div class="stat-line">
+                            <span class="label">Ejemplo</span>
+                            <span class="value">09:00 - 20:00</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Paso de agenda</span>
+                            <span class="value">15 minutos</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="label">Sabados</span>
+                            <span class="value">09:00 - 14:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

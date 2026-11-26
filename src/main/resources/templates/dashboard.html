@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Panel de control')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('panel')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Panel de control', 'Resumen de la operacion de hoy')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="alert alert-info">
+                <svg class="icon"><use href="#i-info"/></svg>
+                <span th:if="${odontologoActual != null}">
+                    Bienvenido(a), <strong th:text="${odontologoActual.nombreCompleto}">Dr.</strong>.
+                    Esta viendo unicamente su agenda.
+                </span>
+                <span th:unless="${odontologoActual != null}">
+                    Agenda del dia y recordatorios automaticos activos. Los horarios mostrados ya excluyen
+                    las citas canceladas y reprogramadas.
+                </span>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid grid-4">
+                <div class="kpi">
+                    <div class="kpi-icon">
+                        <svg class="icon"><use href="#i-calendar"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${citasHoy}">12</div>
+                        <div class="kpi-label">Citas de hoy</div>
+                    </div>
+                    <div class="kpi-note" th:text="${@fmt.fechaLarga(hoy)}">Martes 24 de noviembre</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-icon violet">
+                        <svg class="icon"><use href="#i-clock"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${pendientesHoy}">4</div>
+                        <div class="kpi-label">Pendientes de atencion</div>
+                    </div>
+                    <div class="kpi-note">Programadas y confirmadas</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-icon">
+                        <svg class="icon"><use href="#i-check"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${atendidasHoy}">6</div>
+                        <div class="kpi-label">Atendidas hoy</div>
+                    </div>
+                    <div class="kpi-note">
+                        <span th:text="${canceladasHoy}">1</span> canceladas &middot;
+                        <span th:text="${ausentesHoy}">1</span> ausentes
+                    </div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-icon rose">
+                        <svg class="icon"><use href="#i-chart"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-value" th:text="${@fmt.porcentaje(tasaInasistencia)}">8.5 %</div>
+                        <div class="kpi-label">Inasistencia (30 dias)</div>
+                    </div>
+                    <div class="kpi-note">Meta del proyecto: menos de 10 %</div>
+                </div>
+            </div>
+
+            <div class="grid grid-main mt-2">
+                <!-- Agenda del dia -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-list"/></svg>
+                                Agenda de hoy
+                            </div>
+                            <div class="card-sub" th:text="${@fmt.fechaLarga(hoy)}">Martes 24 de noviembre</div>
+                        </div>
+                        <a class="btn btn-soft btn-sm" th:href="@{/citas}">Ver agenda completa</a>
+                    </div>
+                    <div class="card-body tight">
+                        <div class="timeline" th:if="${!#lists.isEmpty(agendaHoy)}">
+                            <div class="timeline-item" th:each="c : ${agendaHoy}">
+                                <div class="timeline-time" th:text="${@fmt.hora(c.inicio)}">09:00</div>
+                                <div class="timeline-body">
+                                    <div class="timeline-title">
+                                        <a th:href="@{/citas/{id}(id=${c.id})}" th:text="${c.paciente.nombreCompleto}">
+                                            Maria Quispe
+                                        </a>
+                                    </div>
+                                    <div class="timeline-sub">
+                                        <span th:text="${c.servicio.nombre}">Limpieza dental</span>
+                                        &middot;
+                                        <span th:text="${c.odontologo.nombreCompleto}">Dr. Carlos Ramos</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="badge" th:classappend="${c.estado.css}" th:text="${c.estado.etiqueta}">
+                                        Confirmada
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="empty" th:if="${#lists.isEmpty(agendaHoy)}">
+                            <svg class="icon"><use href="#i-calendar"/></svg>
+                            <div>No hay citas registradas para hoy.</div>
+                            <a class="btn btn-primary btn-sm mt-1" th:href="@{/citas/nueva}">Reservar una cita</a>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span><strong th:text="${citasHoy}">0</strong> citas en la agenda de hoy</span>
+                        <a th:href="@{/citas/nueva}">Reservar cita</a>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- Proximas citas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-clock"/></svg>
+                                Proximas citas
+                            </div>
+                        </div>
+                        <div class="card-body tight">
+                            <div class="timeline" th:if="${!#lists.isEmpty(proximas)}">
+                                <div class="timeline-item" th:each="c : ${proximas}">
+                                    <div class="timeline-body">
+                                        <div class="timeline-title">
+                                            <a th:href="@{/citas/{id}(id=${c.id})}"
+                                               th:text="${c.paciente.nombreCompleto}">Paciente</a>
+                                        </div>
+                                        <div class="timeline-sub">
+                                            <span th:text="${@fmt.diaHora(c.inicio)}">Mie 25/11 09:00</span>
+                                            &middot;
+                                            <span th:text="${c.servicio.nombre}">Consulta</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge" th:classappend="${c.estado.css}" th:text="${c.estado.etiqueta}">
+                                        Programada
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="empty" th:if="${#lists.isEmpty(proximas)}">
+                                Sin citas proximas registradas.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accesos rapidos -->
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-grid"/></svg>
+                                Accesos rapidos
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid grid-2" style="gap:10px">
+                                <a class="btn btn-outline btn-block" th:href="@{/citas/nueva}">
+                                    <svg class="icon"><use href="#i-plus"/></svg> Nueva cita
+                                </a>
+                                <a class="btn btn-outline btn-block" th:href="@{/pacientes/nuevo}">
+                                    <svg class="icon"><use href="#i-user"/></svg> Paciente
+                                </a>
+                                <a class="btn btn-outline btn-block" th:href="@{/reportes}">
+                                    <svg class="icon"><use href="#i-chart"/></svg> Reportes
+                                </a>
+                                <a class="btn btn-outline btn-block" th:href="@{/recordatorios}">
+                                    <svg class="icon"><use href="#i-bell"/></svg> Recordatorios
+                                    <span class="nav-badge" style="margin-left:4px" th:if="${pendientesCount > 0}"
+                                          th:text="${pendientesCount}">2</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

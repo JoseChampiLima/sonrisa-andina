@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Mis citas')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('mis-citas')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Mis citas', 'Consulte y cancele sus citas en la clinica')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="alert alert-info" th:if="${paciente != null}">
+                <svg class="icon"><use href="#i-info"/></svg>
+                <span>
+                    Hola <strong th:text="${paciente.nombres}">Maria</strong>, desde aqui puede revisar sus citas.
+                    Si no puede asistir, cancele con anticipacion para liberar el horario.
+                </span>
+            </div>
+
+            <div class="grid grid-main" th:if="${paciente != null}">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-calendar"/></svg> Proximas citas
+                        </div>
+                        <span class="tag"><span th:text="${#lists.size(proximas)}">0</span> programadas</span>
+                    </div>
+                    <div class="table-wrap" th:if="${!#lists.isEmpty(proximas)}">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Servicio</th>
+                                <th>Odontologo</th>
+                                <th>Estado</th>
+                                <th class="text-right">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="c : ${proximas}">
+                                <td class="cell-nowrap">
+                                    <div class="cell-strong" th:text="${@fmt.fecha(c.fecha)}">24/11/2026</div>
+                                    <div class="cell-sub" th:text="${@fmt.hora(c.inicio)} + ' - ' + ${@fmt.hora(c.fin)}">
+                                        09:00 - 09:45
+                                    </div>
+                                </td>
+                                <td th:text="${c.servicio.nombre}">Limpieza dental</td>
+                                <td th:text="${c.odontologo.nombreCompleto}">Carlos Ramos</td>
+                                <td>
+                                    <span class="badge" th:classappend="${c.estado.css}"
+                                          th:text="${c.estado.etiqueta}">Programada</span>
+                                </td>
+                                <td>
+                                    <div class="row-actions" style="justify-content:flex-end">
+                                        <form th:action="@{/mis-citas/{id}/cancelar(id=${c.id})}" method="post"
+                                              data-confirm="¿Confirma que desea cancelar esta cita?">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <svg class="icon"><use href="#i-x"/></svg> Cancelar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty" th:if="${#lists.isEmpty(proximas)}">
+                        <svg class="icon"><use href="#i-calendar"/></svg>
+                        <div>No tiene citas proximas. Comuniquese con recepcion para reservar una.</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-clock"/></svg> Datos de la clinica
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-pair">
+                            <span class="label">Direccion</span>
+                            <span class="value">Jesus Maria, Lima</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Horario</span>
+                            <span class="value">L-V 9:00 - 20:00</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Sabados</span>
+                            <span class="value">9:00 - 14:00</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Telefono</span>
+                            <span class="value">(01) 555-0123</span>
+                        </div>
+                        <div class="alert alert-info mt-2">
+                            <svg class="icon"><use href="#i-bell"/></svg>
+                            <span>Recibira un recordatorio 24 horas antes de cada cita.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon"><use href="#i-list"/></svg> Historial de citas
+                    </div>
+                    <span class="tag"><span th:text="${#lists.size(citas)}">0</span> en total</span>
+                </div>
+                <div class="table-wrap" th:if="${!#lists.isEmpty(citas)}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Servicio</th>
+                            <th>Odontologo</th>
+                            <th>Estado</th>
+                            <th>Motivo</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${citas}">
+                            <td class="cell-nowrap">
+                                <div class="cell-strong" th:text="${@fmt.fecha(c.fecha)}">24/11/2026</div>
+                                <div class="cell-sub" th:text="${@fmt.hora(c.inicio)}">09:00</div>
+                            </td>
+                            <td th:text="${c.servicio.nombre}">Limpieza dental</td>
+                            <td th:text="${c.odontologo.nombreCompleto}">Carlos Ramos</td>
+                            <td>
+                                <span class="badge" th:classappend="${c.estado.css}"
+                                      th:text="${c.estado.etiqueta}">Atendida</span>
+                            </td>
+                            <td class="cell-sub" th:text="${c.motivo != null ? c.motivo : '-'}">-</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty" th:if="${#lists.isEmpty(citas)}">Sin citas registradas.</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

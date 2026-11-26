@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Reprogramar cita')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('agenda')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Reprogramar cita', 'Elija un nuevo horario libre para el paciente')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-calendar"/></svg>
+                            Nueva fecha y hora
+                        </div>
+                        <a class="btn btn-ghost btn-sm" th:href="@{/citas/{id}(id=${cita.id})}">
+                            <svg class="icon"><use href="#i-arrow-left"/></svg> Volver al detalle
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/citas/{id}/reprogramar(id=${cita.id})}" method="post" th:object="${form}">
+                            <div class="form-grid">
+                                <div class="field full">
+                                    <label for="fecha">Nueva fecha</label>
+                                    <input type="date" th:field="*{fecha}">
+                                    <span class="error-text" th:if="${#fields.hasErrors('fecha')}"
+                                          th:errors="*{fecha}"></span>
+                                </div>
+
+                                <div class="field full"
+                                     id="horarios"
+                                     th:attr="data-url=@{/api/disponibilidad},
+                                              data-odontologo=${cita.odontologo.id},
+                                              data-servicio=${cita.servicio.id}">
+                                    <label>Horarios disponibles</label>
+                                    <input type="hidden" th:field="*{hora}" id="hora">
+                                    <div class="slots" id="lista-horarios">
+                                        <div class="slot-empty">Calculando horarios disponibles...</div>
+                                    </div>
+                                    <span class="hint" id="horarios-detalle"></span>
+                                    <span class="error-text" th:if="${#fields.hasErrors('hora')}"
+                                          th:errors="*{hora}"></span>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning mt-2">
+                                <svg class="icon"><use href="#i-alert"/></svg>
+                                <span>
+                                    La cita actual quedara en estado REPROGRAMADA y se creara una nueva cita
+                                    enlazada a la original, conservando la trazabilidad del cambio.
+                                </span>
+                            </div>
+
+                            <div class="form-actions">
+                                <a class="btn btn-outline" th:href="@{/citas/{id}(id=${cita.id})}">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon"><use href="#i-check"/></svg> Guardar nueva fecha
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-info"/></svg> Cita original
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-pair">
+                            <span class="label">Paciente</span>
+                            <span class="value" th:text="${cita.paciente.nombreCompleto}">Maria Quispe</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Odontologo</span>
+                            <span class="value" th:text="${cita.odontologo.nombreCompleto}">Carlos Ramos</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Servicio</span>
+                            <span class="value" th:text="${cita.servicio.nombre}">Limpieza dental</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Fecha actual</span>
+                            <span class="value">
+                                <span th:text="${@fmt.fecha(cita.fecha)}">24/11/2026</span>
+                                <span th:text="' ' + ${@fmt.hora(cita.inicio)}">09:00</span>
+                            </span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Duracion</span>
+                            <span class="value" th:text="${cita.duracionMin} + ' minutos'">45 minutos</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Estado</span>
+                            <span class="value">
+                                <span class="badge" th:classappend="${cita.estado.css}"
+                                      th:text="${cita.estado.etiqueta}">Programada</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

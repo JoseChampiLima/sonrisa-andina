@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Odontologos')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('odontologos')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Odontologos', 'Profesionales, especialidades y horarios de atencion')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="section-head">
+                <div>
+                    <h2>Equipo profesional</h2>
+                    <p class="muted small">Cada odontologo tiene una especialidad principal y un horario semanal
+                        que condiciona los horarios que ofrece el sistema.</p>
+                </div>
+                <a class="btn btn-primary" th:href="@{/odontologos/nuevo}">
+                    <svg class="icon"><use href="#i-plus"/></svg> Nuevo odontologo
+                </a>
+            </div>
+
+            <div class="grid grid-3" th:if="${!#lists.isEmpty(odontologos)}">
+                <div class="card" th:each="o : ${odontologos}">
+                    <div class="card-body">
+                        <div class="person" style="justify-content:space-between; align-items:flex-start">
+                            <div class="person">
+                                <div class="avatar" th:text="${#strings.substring(o.nombres,0,1)}">C</div>
+                                <div>
+                                    <div class="cell-strong" th:text="${o.nombreCompleto}">Carlos Ramos</div>
+                                    <div class="cell-sub" th:text="${o.especialidad.nombre}">Odontologia general</div>
+                                </div>
+                            </div>
+                            <span class="badge" th:classappend="${o.activo} ? 'badge-atendida' : 'badge-cancelada'"
+                                  th:text="${o.activo ? 'Activo' : 'Inactivo'}">Activo</span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="info-pair">
+                            <span class="label">DNI</span>
+                            <span class="value" th:text="${o.dni}">70000001</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Colegiatura</span>
+                            <span class="value" th:text="${o.nroColegiatura}">10001</span>
+                        </div>
+                        <div class="info-pair">
+                            <span class="label">Telefono</span>
+                            <span class="value" th:text="${o.telefono}">900000001</span>
+                        </div>
+
+                        <div class="row-actions mt-2">
+                            <a class="btn btn-outline btn-sm" th:href="@{/odontologos/{id}/agenda(id=${o.id})}">
+                                <svg class="icon"><use href="#i-calendar"/></svg> Agenda
+                            </a>
+                            <a class="btn btn-outline btn-sm" th:href="@{/odontologos/{id}/editar(id=${o.id})}">
+                                <svg class="icon"><use href="#i-edit"/></svg> Editar
+                            </a>
+                            <form th:action="@{/odontologos/{id}/estado(id=${o.id})}" method="post"
+                                  style="margin-left:auto">
+                                <input type="hidden" name="activo" th:value="${!o.activo}">
+                                <button type="submit"
+                                        class="btn btn-sm"
+                                        th:classappend="${o.activo} ? 'btn-danger' : 'btn-soft'"
+                                        th:text="${o.activo ? 'Desactivar' : 'Activar'}">Desactivar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" th:if="${#lists.isEmpty(odontologos)}">
+                <div class="empty">
+                    <svg class="icon"><use href="#i-doctor"/></svg>
+                    <div>No hay odontologos registrados.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

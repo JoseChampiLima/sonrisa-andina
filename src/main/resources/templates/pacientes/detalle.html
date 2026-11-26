@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Detalle del paciente')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <aside th:replace="~{fragments/layout :: sidebar('pacientes')}"></aside>
+
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Detalle del paciente', 'Historial de citas y datos de contacto')}"></header>
+
+        <section class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="section-head">
+                <div class="person">
+                    <div class="avatar" th:text="${#strings.substring(paciente.nombres,0,1)}">M</div>
+                    <div>
+                        <h2 th:text="${paciente.nombreCompleto}">Maria Quispe</h2>
+                        <p class="muted small" th:text="'DNI ' + ${paciente.dni} + ' · Registrado el ' + ${@fmt.fecha(paciente.fechaRegistro.toLocalDate())}">
+                            DNI 70123456
+                        </p>
+                    </div>
+                </div>
+                <div class="row-actions">
+                    <a class="btn btn-outline btn-sm" th:href="@{/pacientes}">Volver</a>
+                    <a class="btn btn-outline btn-sm" th:href="@{/pacientes/{id}/editar(id=${paciente.id})}">
+                        <svg class="icon"><use href="#i-edit"/></svg> Editar
+                    </a>
+                    <a class="btn btn-primary btn-sm" th:href="@{/citas/nueva(idPaciente=${paciente.id})}">
+                        <svg class="icon"><use href="#i-plus"/></svg> Reservar cita
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-main">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="icon"><use href="#i-calendar"/></svg> Historial de citas
+                        </div>
+                        <span class="tag"><span th:text="${#lists.size(citas)}">0</span> citas</span>
+                    </div>
+                    <div class="table-wrap" th:if="${!#lists.isEmpty(citas)}">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Servicio</th>
+                                <th>Odontologo</th>
+                                <th>Estado</th>
+                                <th class="text-right">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="c : ${citas}">
+                                <td class="cell-nowrap">
+                                    <div class="cell-strong" th:text="${@fmt.fecha(c.fecha)}">24/11/2026</div>
+                                    <div class="cell-sub" th:text="${@fmt.hora(c.inicio)}">09:00</div>
+                                </td>
+                                <td th:text="${c.servicio.nombre}">Limpieza dental</td>
+                                <td th:text="${c.odontologo.nombreCompleto}">Carlos Ramos</td>
+                                <td>
+                                    <span class="badge" th:classappend="${c.estado.css}"
+                                          th:text="${c.estado.etiqueta}">Atendida</span>
+                                </td>
+                                <td>
+                                    <div class="row-actions" style="justify-content:flex-end">
+                                        <a class="btn btn-outline btn-sm" th:href="@{/citas/{id}(id=${c.id})}">Ver</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty" th:if="${#lists.isEmpty(citas)}">
+                        <svg class="icon"><use href="#i-calendar"/></svg>
+                        <div>Este paciente aun no tiene citas registradas.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg class="icon"><use href="#i-user"/></svg> Datos de contacto
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-pair">
+                                <span class="label">Telefono</span>
+                                <span class="value" th:text="${paciente.telefono}">987654321</span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Correo</span>
+                                <span class="value" th:text="${paciente.correo != null ? paciente.correo : 'Sin correo'}">
+                                    correo@dominio.com
+                                </span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Canal de recordatorio</span>
+                                <span class="value" th:text="${paciente.correo != null ? 'Correo electronico' : 'WhatsApp'}">
+                                    Correo electronico
+                                </span>
+                            </div>
+                            <div class="info-pair">
+                                <span class="label">Fecha de registro</span>
+                                <span class="value" th:text="${@fmt.fechaHora(paciente.fechaRegistro)}">24/11/2026 08:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <form th:action="@{/pacientes/{id}/eliminar(id=${paciente.id})}" method="post"
+                                  data-confirm="¿Desea eliminar el registro del paciente? Esta accion no se puede deshacer.">
+                                <button type="submit" class="btn btn-danger btn-block" th:disabled="${!#lists.isEmpty(citas)}">
+                                    <svg class="icon"><use href="#i-x"/></svg> Eliminar paciente
+                                </button>
+                            </form>
+                            <p class="small muted mt-1" th:if="${!#lists.isEmpty(citas)}">
+                                No es posible eliminar pacientes con citas registradas: la informacion se
+                                conserva por trazabilidad clinica.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
